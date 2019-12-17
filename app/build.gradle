@@ -26,4 +26,14 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    //加上第三方的侧滑抽屉菜单
+    compile('com.mikepenz:materialdrawer:5.9.0@aar') {
+        transitive = true
+    }
+
+    //这个改变颜色的控件
+    implementation 'com.github.rtugeek:colorseekbar:1.7.5'
+
 }
+
