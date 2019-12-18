@@ -1,7 +1,8 @@
-package com.example.mytime;
+package com.example.mytime.UserDefined;
 
 import androidx.annotation.LayoutRes;
 
+import com.example.mytime.R;
 import com.mikepenz.materialdrawer.model.AbstractBadgeableDrawerItem;
 
 public class MySegmentationDrawerItem extends AbstractBadgeableDrawerItem<MySegmentationDrawerItem>{

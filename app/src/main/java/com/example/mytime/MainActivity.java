@@ -13,7 +13,16 @@ import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mytime.DataStructure.CountDownItem;
+import com.example.mytime.DataStructure.DataManager;
+import com.example.mytime.UserDefined.CountDownItemAdapter;
+import com.example.mytime.UserDefined.MyDataFormat;
+import com.example.mytime.UserDefined.MyDialog;
+import com.example.mytime.UserDefined.MyLabelDrawerItem;
+import com.example.mytime.UserDefined.MySegmentationDrawerItem;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -26,23 +35,46 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.rtugeek.android.colorseekbar.ColorSeekBar;
 
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
     //全局变量
     private DataManager dataManager;
+    //侧滑菜单
     private Drawer drawer;
+    //recyclerview
+    private RecyclerView recyclerView;
+    private List<CountDownItem> countDownItemList;
+    private CountDownItemAdapter countDownItemAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //获取后台数据
         dataManager = (DataManager)getApplication();
+        //初始化侧滑抽屉菜单
         initSildingMeun();
+
+        //initTextView();
+        //countDownThread = new CountDownThread();
+        //new Thread(countDownThread).start();
+
+        //初始化recyclerview
+        try {
+            initRecyclerView();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
 
 
     }
 
 
-    /////////////////////////***************侧滑抽屉菜单的配置_start***************/////////////////////////
+    //*****************************************************************************************************侧滑菜单的配置
     //创建滑动菜单以及相关配置
     private void  initSildingMeun(){
 
@@ -354,7 +386,94 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /////////////////////////***************侧滑抽屉菜单的配置_end***************/////////////////////////
+    //*****************************************************************************************************recyclerview的配置
+    private void initRecyclerView() throws ParseException {
+        recyclerView = findViewById(R.id.recyclerview);
+        countDownItemList = new ArrayList<>();
+        long timeInMillis = MyDataFormat.setCoountDownItemTime(2019,12,18,4,4,4);
+        CountDownItem countDownItem1 = new CountDownItem(timeInMillis,"标题","18号4点","第一个",R.drawable.user);
+
+        timeInMillis = MyDataFormat.setCoountDownItemTime(2019,12,16,4,4,4);
+        CountDownItem countDownItem2 = new CountDownItem(timeInMillis,"标题","16号4点","第二个",R.drawable.user);
+
+        countDownItemList.add(countDownItem1);
+        countDownItemList.add(countDownItem2);
+
+        countDownItemAdapter = new CountDownItemAdapter(countDownItemList);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,1);
+        recyclerView.setLayoutManager(gridLayoutManager);
+        recyclerView.setAdapter(countDownItemAdapter);
+    }
+
+
+    //*****************************************************************************************************子线程的配置
+    /*
+    private TextView textView;
+    private void initTextView(){
+      textView = findViewById(R.id.textview);
+    }
+    private class CountDownThread extends Thread{
+
+        private int i = 0;
+        private boolean beAlive = true;
+        @Override
+        public void run() {
+            while (beAlive){
+                try{
+                    Message message = new Message();
+                    message.what = 1;
+                    i+=1;
+                    message.arg1 = i;
+                    handler.sendMessage(message);
+                    Thread.sleep(1000);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+            }
+
+        }
+
+        public void stopThread(){
+            beAlive =false;
+            while (true){
+                try{
+                    this.join();
+                    break;
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
+
+    }
+
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            switch (msg.what){
+                case 1:
+                    textView.setText(""+msg.arg1);
+                    break;
+                    default:
+                        break;
+            }
+        }
+    };
+    private CountDownThread countDownThread;
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(countDownThread != null){
+            countDownThread.stopThread();
+        }
+
+    }
+    */
+
 
 
 

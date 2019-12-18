@@ -1,4 +1,4 @@
-package com.example.mytime;
+package com.example.mytime.UserDefined;
 
 import android.app.Dialog;
 import android.content.Context;

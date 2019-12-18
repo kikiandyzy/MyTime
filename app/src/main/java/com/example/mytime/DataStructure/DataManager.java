@@ -1,4 +1,4 @@
-package com.example.mytime;
+package com.example.mytime.DataStructure;
 
 import android.app.Application;
 
