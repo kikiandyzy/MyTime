@@ -1,5 +1,10 @@
 package com.example.mytime.DataStructure;
 
+import com.example.mytime.UserDefined.MyDataFormat;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class CountDownItem {
     private Long time;
     private String title;
@@ -54,5 +59,40 @@ public class CountDownItem {
 
     public void setImageId(int imageId) {
         this.imageId = imageId;
+    }
+
+    //这个刷新时候用到的信息
+
+    private List<String> stringList = new ArrayList<>();
+
+    int i=0;
+    public void updateCountDownTime(){
+        stringList = MyDataFormat.getCountDownItemCountDownTimeStringList(time);
+    }
+
+    public String getRecycleViewItemCountDownDescribe(){
+        if(stringList.size() != 0){
+            return stringList.get(0);
+        }
+        return "还剩";
+    }
+
+    public String getRecycleViewItemCountDownTime(){
+        if(stringList.size() != 0){
+            return stringList.get(1);
+        }
+        return "0秒";
+    }
+
+    public String getMaterialBannerItemCountDown(){
+        if(stringList.size() != 0){
+            StringBuilder stringBuilder = new StringBuilder();
+            for(int i=1;i<stringList.size();i++){
+                stringBuilder.append(stringList.get(i));
+            }
+            return stringBuilder.toString();
+        }
+
+        return "";
     }
 }

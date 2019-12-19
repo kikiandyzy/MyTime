@@ -2,17 +2,25 @@ package com.example.mytime;
 
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Display;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,8 +29,13 @@ import com.example.mytime.DataStructure.DataManager;
 import com.example.mytime.UserDefined.CountDownItemAdapter;
 import com.example.mytime.UserDefined.MyDataFormat;
 import com.example.mytime.UserDefined.MyDialog;
+import com.example.mytime.UserDefined.MyHolderCreator;
 import com.example.mytime.UserDefined.MyLabelDrawerItem;
 import com.example.mytime.UserDefined.MySegmentationDrawerItem;
+import com.freegeek.android.materialbanner.MaterialBanner;
+import com.freegeek.android.materialbanner.view.indicator.CirclePageIndicator;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -44,10 +57,40 @@ public class MainActivity extends AppCompatActivity {
     private DataManager dataManager;
     //侧滑菜单
     private Drawer drawer;
-    //recyclerview
+    //recyclerview以及配适器
     private RecyclerView recyclerView;
     private List<CountDownItem> countDownItemList;
     private CountDownItemAdapter countDownItemAdapter;
+
+    //主页面上的AppBarLayout
+    //toolbar的父布局，可以实现收缩
+    CollapsingToolbarLayout collapsingToolbarLayout;
+    Toolbar toolbar;
+
+    //悬浮按钮
+    FloatingActionButton floatingActionButton;
+
+    //首页的展示横幅
+    MaterialBanner materialBanner;
+    MyHolderCreator myHolderCreator;
+
+    //子线程和异步消息处理
+    private CountDownThread countDownThread;
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            switch (msg.what){
+                case 1:
+                    countDownItemAdapter.notifyDataSetChanged();
+                    myHolderCreator.update();
+
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,12 +98,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //获取后台数据
         dataManager = (DataManager)getApplication();
+        //初始化主页面的AppBar
+        initAppBarLayout();
         //初始化侧滑抽屉菜单
         initSildingMeun();
 
-        //initTextView();
-        //countDownThread = new CountDownThread();
-        //new Thread(countDownThread).start();
+
+
+
 
         //初始化recyclerview
         try {
@@ -69,8 +114,32 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        //初始化悬浮按钮
+        initFloatingActionButton();
+
+        //初始化横幅
+        initMaterialBanner();
+
+        //测试编辑
 
 
+        countDownThread = new CountDownThread();
+        new Thread(countDownThread).start();
+
+
+
+
+    }
+
+    //点击
+    @Override
+    public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home://弹出滑动菜单
+                drawer.openDrawer();
+                break;
+        }
+        return true;
     }
 
 
@@ -316,8 +385,9 @@ public class MainActivity extends AppCompatActivity {
     }
     //弹出一个选择颜色的对话框
     private void buildChooseColorDialog(){
-        //final ColorStateList colorStateList = floatingActionButton.getBackgroundTintList();
-        //final Drawable drawable = collapsingToolbarLayout.getContentScrim();
+        //先保存原有的颜色
+        final ColorStateList colorStateList = floatingActionButton.getBackgroundTintList();
+        final Drawable drawable = collapsingToolbarLayout.getContentScrim();
 
         //先获取设备屏幕大小
         Display defaultDisplay = getWindowManager().getDefaultDisplay();
@@ -347,9 +417,9 @@ public class MainActivity extends AppCompatActivity {
                 //textView.setTextColor(color);
                 //colorSeekBar.getAlphaValue();
 
-                //collapsingToolbarLayout.setContentScrimColor(color);
-                //floatingActionButton.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
-                //floatingActionButton.setBackgroundTintList(createColorStateList(color,color,color,color));
+                collapsingToolbarLayout.setContentScrimColor(color);
+                floatingActionButton.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
+                floatingActionButton.setBackgroundTintList(createColorStateList(color,color,color,color));
 
             }
         });
@@ -358,8 +428,8 @@ public class MainActivity extends AppCompatActivity {
         { myDialog.getWindow().findViewById(R.id.choose_color_cancel).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //collapsingToolbarLayout.setContentScrim(drawable);
-                //floatingActionButton.setBackgroundTintList(colorStateList);
+                collapsingToolbarLayout.setContentScrim(drawable);
+                floatingActionButton.setBackgroundTintList(colorStateList);
                 myDialog.dismiss();
             }
         });
@@ -385,16 +455,17 @@ public class MainActivity extends AppCompatActivity {
         return colorList;
     }
 
-
     //*****************************************************************************************************recyclerview的配置
     private void initRecyclerView() throws ParseException {
-        recyclerView = findViewById(R.id.recyclerview);
+        recyclerView = findViewById(R.id.recyclerview_activity_mian);
         countDownItemList = new ArrayList<>();
         long timeInMillis = MyDataFormat.setCoountDownItemTime(2019,12,18,4,4,4);
-        CountDownItem countDownItem1 = new CountDownItem(timeInMillis,"标题","18号4点","第一个",R.drawable.user);
+        CountDownItem countDownItem1 = new CountDownItem(timeInMillis,"标题1","2019-12-18-4-4-4","第一个",R.drawable.user);
+
 
         timeInMillis = MyDataFormat.setCoountDownItemTime(2019,12,16,4,4,4);
-        CountDownItem countDownItem2 = new CountDownItem(timeInMillis,"标题","16号4点","第二个",R.drawable.user);
+        CountDownItem countDownItem2 = new CountDownItem(timeInMillis,"标题2","2019-12-16-4-4-4","第二个",R.drawable.user);
+
 
         countDownItemList.add(countDownItem1);
         countDownItemList.add(countDownItem2);
@@ -405,16 +476,69 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(countDownItemAdapter);
     }
 
+    //*****************************************************************************************************AppBarLayout的配置
+    private void initAppBarLayout(){
+        //toolbar加载
+        toolbar = findViewById(R.id.toolbar_activity_mian);
+        //toolbar外面的布局
+        collapsingToolbarLayout =  findViewById(R.id.layout_collapsing_toolbar_activity_mian);
+        //折叠前后的颜色
+        collapsingToolbarLayout.setCollapsedTitleTextColor(Color.parseColor("#FFFFFF"));
+        collapsingToolbarLayout.setExpandedTitleColor(Color.parseColor("#00000000"));
+        //绑定
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        //加上了一张图片作为弹出菜单的按钮
+        actionBar.setHomeAsUpIndicator(R.drawable.menu_activity_main);
+
+    }
+
+    //*****************************************************************************************************悬浮按钮的配置
+    private void initFloatingActionButton(){
+        floatingActionButton = findViewById(R.id.floating_action_button_activity_mian);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                try{
+                    long timeInMillis = MyDataFormat.setCoountDownItemTime(2019,12,19,4,4,4);
+                    CountDownItem countDownItem = new CountDownItem(timeInMillis,"标题3","2019-12-19-4-4-4","第一个",R.drawable.user);
+                    countDownItemList.remove(0);
+
+                    //countDownItemList.add(countDownItem);
+                    countDownItemAdapter.notifyDataSetChanged();
+                    updateMaterialBannerPages();
+                    Toast.makeText(MainActivity.this, "悬浮按钮", Toast.LENGTH_SHORT).show();
+                }catch (Exception e){
+
+                }
+
+
+
+
+            }
+        });
+    }
+
+    //*****************************************************************************************************横幅的配置
+    private void initMaterialBanner(){
+        materialBanner = findViewById(R.id.material_banner_activity_main);
+        myHolderCreator = new MyHolderCreator();
+        materialBanner.setPages(myHolderCreator,countDownItemList).setIndicator(new CirclePageIndicator(this));
+
+    }
+
+    private void updateMaterialBannerPages(){
+        myHolderCreator = new MyHolderCreator();
+        materialBanner.setPages(myHolderCreator,countDownItemList).setIndicator(new CirclePageIndicator(this));
+    }
 
     //*****************************************************************************************************子线程的配置
-    /*
-    private TextView textView;
-    private void initTextView(){
-      textView = findViewById(R.id.textview);
-    }
+
     private class CountDownThread extends Thread{
 
-        private int i = 0;
+
         private boolean beAlive = true;
         @Override
         public void run() {
@@ -422,8 +546,9 @@ public class MainActivity extends AppCompatActivity {
                 try{
                     Message message = new Message();
                     message.what = 1;
-                    i+=1;
-                    message.arg1 = i;
+                    for(int i=0;i<countDownItemList.size();i++){
+                        countDownItemList.get(i).updateCountDownTime();
+                    }
                     handler.sendMessage(message);
                     Thread.sleep(1000);
                 }catch (Exception e){
@@ -450,20 +575,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private Handler handler = new Handler(){
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            switch (msg.what){
-                case 1:
-                    textView.setText(""+msg.arg1);
-                    break;
-                    default:
-                        break;
-            }
-        }
-    };
-    private CountDownThread countDownThread;
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -472,7 +583,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-    */
+
 
 
 

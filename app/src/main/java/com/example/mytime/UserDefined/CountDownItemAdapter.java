@@ -40,12 +40,14 @@ public class CountDownItemAdapter extends RecyclerView.Adapter<CountDownItemAdap
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         CountDownItem countDownItem = countdownItemList.get(position);
-        holder.countDownDescribe.setText(countDownItem.getDescribe());
+        holder.countDownDescribe.setText(countDownItem.getRecycleViewItemCountDownDescribe());
+        holder.countDownTime.setText(countDownItem.getRecycleViewItemCountDownTime());
         holder.title.setText(countDownItem.getTitle());
         holder.targetDate.setText(countDownItem.getTargetDate());
         holder.describe.setText(countDownItem.getDescribe());
         holder.imageView.setImageResource(countDownItem.getImageId());
         holder.linearLayout.setBackgroundResource(countDownItem.getImageId());
+
     }
 
     @Override
@@ -58,6 +60,7 @@ public class CountDownItemAdapter extends RecyclerView.Adapter<CountDownItemAdap
         CardView cardView;
         LinearLayout linearLayout;
         TextView countDownDescribe;
+        TextView countDownTime;
         TextView title;
         TextView targetDate;
         TextView describe;
@@ -68,6 +71,7 @@ public class CountDownItemAdapter extends RecyclerView.Adapter<CountDownItemAdap
             cardView = (CardView)itemView;
             linearLayout = cardView.findViewById(R.id.count_down_item_linearlayout);
             countDownDescribe = cardView.findViewById(R.id.count_down_item_countdown_describe);
+            countDownTime = cardView.findViewById(R.id.count_down_item_countdown_time);
             title = cardView.findViewById(R.id.count_down_item_title);
             targetDate = cardView.findViewById(R.id.count_down_item_targetdata);
             describe = cardView.findViewById(R.id.rcount_down_item_describe);

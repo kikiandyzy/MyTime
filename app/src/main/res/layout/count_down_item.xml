@@ -39,12 +39,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:text="只剩" />
+                        android:text="只剩"
+                        android:textColor="#FFF"/>
                     <TextView
                         android:id="@+id/count_down_item_countdown_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
+                        android:text="0秒"
+                        android:textColor="#FFF"
                         />
                 </LinearLayout>
 

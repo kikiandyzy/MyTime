@@ -35,5 +35,8 @@ dependencies {
     //这个改变颜色的控件
     implementation 'com.github.rtugeek:colorseekbar:1.7.5'
 
+    //主页上的横幅
+    implementation 'com.github.rtugeek:materialbanner:1.0.2'
+
 }
 

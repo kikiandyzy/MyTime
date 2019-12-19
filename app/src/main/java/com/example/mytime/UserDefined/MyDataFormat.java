@@ -19,10 +19,8 @@ public class MyDataFormat {
         calendar.setTime(date);
         return calendar.getTimeInMillis();
     }
-    public static String setCountDownItemCountDownDescribe(){
-        return "";
-    }
-    public static List<String> setCountDownItemCountDownTime(long timeTarget){
+
+    public static List<String> getCountDownItemCountDownTimeStringList(long timeTarget){
         //传进来目标的毫秒数
         List<String> timeMessage = new ArrayList<>();
         Calendar now = Calendar.getInstance();
@@ -49,9 +47,11 @@ public class MyDataFormat {
 
         if(day != 0){
             timeMessage.add(""+day+"天");
-        }else if(hour != 0){
+        }
+        if(hour != 0){
             timeMessage.add(""+hour+"小时");
-        }else if(minute != 0){
+        }
+        if(minute != 0){
             timeMessage.add(""+minute+"分钟");
         }
 

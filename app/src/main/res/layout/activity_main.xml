@@ -15,9 +15,83 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />-->
-    <androidx.recyclerview.widget.RecyclerView
+    <!--<androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"/>-->
+    <!--相当于一个强大的Frament-->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!--appbarLayout必须是CroodinatorLayout的子布局-->
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            >
+            <!--顶部的样式固定了呀-->
+            <!--CollapsingToolbarLayout必须是AppBarLayout的子布局-->
+            <com.google.android.material.appbar.CollapsingToolbarLayout
+
+                android:id="@+id/layout_collapsing_toolbar_activity_mian"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+
+                app:contentScrim="@color/themeColor"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+                <!--<androidx.viewpager.widget.ViewPager
+                    android:id="@+id/viewpager"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    app:layout_collapseMode="parallax" />-->
+                <com.freegeek.android.materialbanner.MaterialBanner
+                    android:id="@+id/material_banner_activity_main"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:match="true"/>
+
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar_activity_mian"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    app:layout_collapseMode="pin" />
+
+
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
+            <!--app:contentScrim="?attr/colorPrimary"折叠之后的颜色-->
+            <!--layout_scrollFlags="scroll表示CollapsingToolbarLayout会随着内容一起滚动
+            |exitUntilCollapsed"表示CollapsingToolbarLayout随着滚动完成之后折叠保留在界面上  -->
+            <!-- app:layout_collapseMode="pin"折叠模式 pin表示位置始终不变parallax表示折叠过程中产生偏差-->
+        </com.google.android.material.appbar.AppBarLayout>
+        <!--注意和AppBar平级-->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerview_activity_mian"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+
+        </androidx.core.widget.NestedScrollView>
+        <!--悬浮按钮-->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floating_action_button_activity_mian"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:src="@drawable/floating_action_bar"
+            app:backgroundTint="@color/themeColor"
+            />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
