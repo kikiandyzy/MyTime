@@ -36,8 +36,8 @@ public class MyHolder implements Holder<CountDownItem> {
     @Override
     public void updateUI(Context context, int i, CountDownItem countDownItem) {
         title.setText(countDownItem.getTitle());
-        targetData.setText(countDownItem.getTargetDate());
-        countdown.setText(countDownItem.getMaterialBannerItemCountDown());
+        targetData.setText(countDownItem.getTargetDateSimple());
+        countdown.setText(countDownItem.getCountDownString());
         imageView.setImageResource(countDownItem.getImageId());
         this.context =context;
         this.countDownItem = countDownItem;
@@ -46,7 +46,7 @@ public class MyHolder implements Holder<CountDownItem> {
 
     public void update(){
 
-        countdown.setText(countDownItem.getMaterialBannerItemCountDown());
+        countdown.setText(countDownItem.getCountDownString());
     }
 
 

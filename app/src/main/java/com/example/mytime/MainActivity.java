@@ -1,6 +1,7 @@
 package com.example.mytime;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -16,18 +17,19 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mytime.DataStructure.CountDownItem;
 import com.example.mytime.DataStructure.DataManager;
 import com.example.mytime.UserDefined.CountDownItemAdapter;
-import com.example.mytime.UserDefined.MyDataFormat;
 import com.example.mytime.UserDefined.MyDialog;
 import com.example.mytime.UserDefined.MyHolderCreator;
 import com.example.mytime.UserDefined.MyLabelDrawerItem;
@@ -49,12 +51,16 @@ import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.rtugeek.android.colorseekbar.ColorSeekBar;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 
+
+
 public class MainActivity extends AppCompatActivity {
+
     //全局变量
     private DataManager dataManager;
+    //主页面最外层布局
+    private ConstraintLayout constraintLayout;
     //侧滑菜单
     private Drawer drawer;
     //recyclerview以及配适器
@@ -81,9 +87,7 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(@NonNull Message msg) {
             switch (msg.what){
                 case 1:
-                    countDownItemAdapter.notifyDataSetChanged();
-                    myHolderCreator.update();
-
+                   countDown();
                     break;
                 default:
                     break;
@@ -96,8 +100,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        constraintLayout = findViewById(R.id.constraintlayout_activity_main);
         //获取后台数据
         dataManager = (DataManager)getApplication();
+        dataManager.constraintLayout = constraintLayout;
         //初始化主页面的AppBar
         initAppBarLayout();
         //初始化侧滑抽屉菜单
@@ -120,14 +126,10 @@ public class MainActivity extends AppCompatActivity {
         //初始化横幅
         initMaterialBanner();
 
-        //测试编辑
 
-
+        //开始计时线程
         countDownThread = new CountDownThread();
         new Thread(countDownThread).start();
-
-
-
 
     }
 
@@ -458,22 +460,22 @@ public class MainActivity extends AppCompatActivity {
     //*****************************************************************************************************recyclerview的配置
     private void initRecyclerView() throws ParseException {
         recyclerView = findViewById(R.id.recyclerview_activity_mian);
-        countDownItemList = new ArrayList<>();
-        long timeInMillis = MyDataFormat.setCoountDownItemTime(2019,12,18,4,4,4);
-        CountDownItem countDownItem1 = new CountDownItem(timeInMillis,"标题1","2019-12-18-4-4-4","第一个",R.drawable.user);
-
-
-        timeInMillis = MyDataFormat.setCoountDownItemTime(2019,12,16,4,4,4);
-        CountDownItem countDownItem2 = new CountDownItem(timeInMillis,"标题2","2019-12-16-4-4-4","第二个",R.drawable.user);
-
-
-        countDownItemList.add(countDownItem1);
-        countDownItemList.add(countDownItem2);
-
+        countDownItemList = dataManager.initCountDownItemList();
         countDownItemAdapter = new CountDownItemAdapter(countDownItemList);
+        countDownItemAdapter.setmOnItemClickListener(new CountDownItemAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View v, int position) {
+                Intent intent = new Intent(MainActivity.this,ShowCountDownActivity.class);
+                intent.putExtra(DataManager.COUNTDOWNITEM,countDownItemList.get(position));
+                intent.putExtra(DataManager.POSITION,position);
+                startActivityForResult(intent,DataManager.REQUEST_CODE_SHOW);
+            }
+        });
+
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this,1);
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setAdapter(countDownItemAdapter);
+
     }
 
     //*****************************************************************************************************AppBarLayout的配置
@@ -500,22 +502,8 @@ public class MainActivity extends AppCompatActivity {
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                try{
-                    long timeInMillis = MyDataFormat.setCoountDownItemTime(2019,12,19,4,4,4);
-                    CountDownItem countDownItem = new CountDownItem(timeInMillis,"标题3","2019-12-19-4-4-4","第一个",R.drawable.user);
-                    countDownItemList.remove(0);
-
-                    //countDownItemList.add(countDownItem);
-                    countDownItemAdapter.notifyDataSetChanged();
-                    updateMaterialBannerPages();
-                    Toast.makeText(MainActivity.this, "悬浮按钮", Toast.LENGTH_SHORT).show();
-                }catch (Exception e){
-
-                }
-
-
-
+                Intent intent = new Intent(MainActivity.this,EditCountDownActivity.class);
+                startActivityForResult(intent, DataManager.REQUEST_CODE_NEW);
 
             }
         });
@@ -526,13 +514,20 @@ public class MainActivity extends AppCompatActivity {
         materialBanner = findViewById(R.id.material_banner_activity_main);
         myHolderCreator = new MyHolderCreator();
         materialBanner.setPages(myHolderCreator,countDownItemList).setIndicator(new CirclePageIndicator(this));
+        materialBanner.setOnItemClickListener(new MaterialBanner.OnItemClickListener() {
+            @Override
+            public void onItemClick(int i) {
+                //启动对应项
+                Intent intent = new Intent(MainActivity.this,ShowCountDownActivity.class);
+                intent.putExtra(DataManager.COUNTDOWNITEM,countDownItemList.get(i));
+                intent.putExtra(DataManager.POSITION,i);
+                startActivityForResult(intent,DataManager.REQUEST_CODE_SHOW);
+            }
+        });
 
     }
 
-    private void updateMaterialBannerPages(){
-        myHolderCreator = new MyHolderCreator();
-        materialBanner.setPages(myHolderCreator,countDownItemList).setIndicator(new CirclePageIndicator(this));
-    }
+
 
     //*****************************************************************************************************子线程的配置
 
@@ -584,16 +579,46 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode){
+            case DataManager.REQUEST_CODE_NEW:
+                if(resultCode == RESULT_OK){
+                    CountDownItem countDownItem = (CountDownItem) data.getSerializableExtra(DataManager.COUNTDOWNITEM);
+                    countDownItemList.add(countDownItem);
+                    notifyDataSetChanged();
+                }
+                break;
+                case DataManager.REQUEST_CODE_SHOW:
+                    if(resultCode == DataManager.RESULT_CODE_DELETE){
+                        //Toast.makeText(this, ""+data.getIntExtra(DataManager.POSITION,0), Toast.LENGTH_SHORT).show();
+                        countDownItemList.remove(data.getIntExtra(DataManager.POSITION,0));
+                        notifyDataSetChanged();
+                    }else if(resultCode == DataManager.RESULT_CODE_EDIT){
+                        try {
+                            countDownItemList.get(data.getIntExtra(DataManager.POSITION,0)).update((CountDownItem) data.getSerializableExtra(DataManager.COUNTDOWNITEM));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        notifyDataSetChanged();
+                    }
+                default:
+                    break;
+        }
+    }
 
+    private void countDown(){
+        countDownItemAdapter.notifyDataSetChanged();
+        myHolderCreator.update();
+    }
 
+    private void notifyDataSetChanged(){
+        countDownItemAdapter.notifyDataSetChanged();
 
-
-
-   
-
-
-
-
+        myHolderCreator = new MyHolderCreator();
+        materialBanner.setPages(myHolderCreator,countDownItemList).setIndicator(new CirclePageIndicator(this));
+    }
 
 }
 

@@ -2,23 +2,41 @@ package com.example.mytime.DataStructure;
 
 import com.example.mytime.UserDefined.MyDataFormat;
 
+import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CountDownItem {
+public class CountDownItem implements Serializable {
     private Long time;
     private String title;
     private String describe;
-    private String targetDate;
     private int imageId;
+    private int[] times;
 
 
-    public CountDownItem(Long time,String title,String targetDate,String describe ,int imageId){
-        this.time = time;
+    public CountDownItem(int[] times,String title,String describe ,int imageId) throws ParseException {
+        this.times = times;
         this.title = title;
         this.describe = describe;
-        this.targetDate = targetDate;
         this.imageId = imageId;
+        time = MyDataFormat.setCoountDownItemTime(times[0],times[1],times[2],times[3],times[4],times[5]);
+    }
+
+    public int[] getTimes() {
+        return times;
+    }
+
+    public void update(CountDownItem countDownItem) throws ParseException {
+        this.times = countDownItem.getTimes();
+        this.title = countDownItem.getTitle();
+        this.describe = countDownItem.getDescribe();
+        this.imageId = countDownItem.getImageId();
+        time = MyDataFormat.setCoountDownItemTime(times[0],times[1],times[2],times[3],times[4],times[5]);
+    }
+
+    public void setTimes(int[] times) {
+        this.times = times;
     }
 
     public Long getTime() {
@@ -45,13 +63,15 @@ public class CountDownItem {
         this.describe = describe;
     }
 
-    public String getTargetDate() {
-        return targetDate;
+    public String getTargetDateSimple() {
+        return ""+times[0]+"-"+times[1]+"-"+times[2];
     }
 
-    public void setTargetDate(String targetDate) {
-        this.targetDate = targetDate;
+    public String getTargetDateParticular(){
+        return ""+times[0]+"-"+times[1]+"-"+times[2]+" "+times[3]+":"+times[4]+":"+times[5];
     }
+
+
 
     public int getImageId() {
         return imageId;
@@ -84,7 +104,7 @@ public class CountDownItem {
         return "0秒";
     }
 
-    public String getMaterialBannerItemCountDown(){
+    public String getCountDownString(){
         if(stringList.size() != 0){
             StringBuilder stringBuilder = new StringBuilder();
             for(int i=1;i<stringList.size();i++){

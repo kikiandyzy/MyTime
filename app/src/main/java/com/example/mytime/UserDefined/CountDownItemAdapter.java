@@ -1,6 +1,5 @@
 package com.example.mytime.UserDefined;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,13 +14,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mytime.DataStructure.CountDownItem;
 import com.example.mytime.R;
 
-
 import java.util.List;
 
-public class CountDownItemAdapter extends RecyclerView.Adapter<CountDownItemAdapter.ViewHolder>{
+public class CountDownItemAdapter extends RecyclerView.Adapter<CountDownItemAdapter.ViewHolder> implements View.OnClickListener{
 
-    private Context context;
+
+
     private List<CountDownItem> countdownItemList;
+    private OnItemClickListener mOnItemClickListener = null;
+
+
+    public void setmOnItemClickListener(OnItemClickListener mOnItemClickListener) {
+        this.mOnItemClickListener = mOnItemClickListener;
+    }
 
     public CountDownItemAdapter(List<CountDownItem> countdownItemList){
         this.countdownItemList = countdownItemList;
@@ -30,11 +35,14 @@ public class CountDownItemAdapter extends RecyclerView.Adapter<CountDownItemAdap
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if(context == null){
-            context = parent.getContext();
-        }
-        View view = LayoutInflater.from(context).inflate(R.layout.count_down_item,parent,false);
-        return new ViewHolder(view);
+
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.count_down_item,parent,false);
+        view.setOnClickListener(this::onClick);
+        final ViewHolder viewHolder = new ViewHolder(view);
+
+
+
+        return viewHolder;
     }
 
     @Override
@@ -43,10 +51,11 @@ public class CountDownItemAdapter extends RecyclerView.Adapter<CountDownItemAdap
         holder.countDownDescribe.setText(countDownItem.getRecycleViewItemCountDownDescribe());
         holder.countDownTime.setText(countDownItem.getRecycleViewItemCountDownTime());
         holder.title.setText(countDownItem.getTitle());
-        holder.targetDate.setText(countDownItem.getTargetDate());
+        holder.targetDate.setText(countDownItem.getTargetDateSimple());
         holder.describe.setText(countDownItem.getDescribe());
         holder.imageView.setImageResource(countDownItem.getImageId());
         holder.linearLayout.setBackgroundResource(countDownItem.getImageId());
+        holder.cardView.setTag(position);
 
     }
 
@@ -55,16 +64,27 @@ public class CountDownItemAdapter extends RecyclerView.Adapter<CountDownItemAdap
         return countdownItemList.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder{
+    @Override
+    public void onClick(View view) {
+        if(mOnItemClickListener != null){
+            //注意这里使用getTag方法获取数据
+            mOnItemClickListener.onItemClick(view,(int)view.getTag());
+        }
+    }
 
-        CardView cardView;
-        LinearLayout linearLayout;
-        TextView countDownDescribe;
-        TextView countDownTime;
-        TextView title;
-        TextView targetDate;
-        TextView describe;
-        ImageView imageView;
+
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+
+        public CardView cardView;
+        private LinearLayout linearLayout;
+        private TextView countDownDescribe;
+        private TextView countDownTime;
+        private TextView title;
+        private TextView targetDate;
+        private TextView describe;
+        private ImageView imageView;
+
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -76,10 +96,23 @@ public class CountDownItemAdapter extends RecyclerView.Adapter<CountDownItemAdap
             targetDate = cardView.findViewById(R.id.count_down_item_targetdata);
             describe = cardView.findViewById(R.id.rcount_down_item_describe);
             imageView = cardView.findViewById(R.id.count_down_item_image);
-            linearLayout = cardView.findViewById(R.id.count_down_item_linearlayout);
+
+
         }
 
+
+
     }
+
+
+    //这个接口是为了mainActiivty调用
+    public static interface OnItemClickListener{
+        void onItemClick(View v , int position);
+    }
+
+
+
+
 
 
 }

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/constraintlayout_activity_main"
     tools:context=".MainActivity">
 
     <!--<TextView
@@ -37,7 +38,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-
                 app:contentScrim="@color/themeColor"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
