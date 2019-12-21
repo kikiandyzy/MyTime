@@ -109,8 +109,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
                 try {
                     judgeInputReasonable();
                 } catch (ParseException e) {
-
-
+                    e.printStackTrace();
                 }
                 break;
                 default:
