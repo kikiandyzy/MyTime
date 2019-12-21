@@ -32,7 +32,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     //加上第三方的侧滑抽屉菜单
-    implementation('com.mikepenz:materialdrawer:5.9.0@aar') {
+    implementation('com.mikepenz:materialdrawer:6.0.9@aar') {
         transitive = true
     }
 

@@ -40,5 +40,7 @@ public class DataManager extends Application {
     public final static String COUNTDOWNITEM = "countDownItem";
     public final static String POSITION = "position";
 
+    public int themeColor = -1;
+
 
 }

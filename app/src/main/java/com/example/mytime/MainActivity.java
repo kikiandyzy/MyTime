@@ -4,14 +4,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.Display;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -327,17 +325,9 @@ public class MainActivity extends AppCompatActivity {
     //弹出一个确认添加标签的对话框
     private void buildAddLabelDialog(final int position){
         View view1 = getLayoutInflater().inflate(R.layout.dialog_add_label, null);
-        //先获取设备屏幕大小
-        Display defaultDisplay = getWindowManager().getDefaultDisplay();
-        Point point = new Point();
-        defaultDisplay.getSize(point);
-        int x = point.x;
-        int y = point.y;
-
-
-
+        int width = constraintLayout.getWidth();//获取最外层布局的宽度
         //宽度和高度即设置的对话框的大小
-        final MyDialog myDialog = new MyDialog(MainActivity.this, y-800, 500, view1);
+        final MyDialog myDialog = new MyDialog(MainActivity.this, width-150, 500, view1);
         myDialog.setCancelable(true);
         myDialog.show();
         /*
@@ -391,14 +381,10 @@ public class MainActivity extends AppCompatActivity {
         final ColorStateList colorStateList = floatingActionButton.getBackgroundTintList();
         final Drawable drawable = collapsingToolbarLayout.getContentScrim();
 
-        //先获取设备屏幕大小
-        Display defaultDisplay = getWindowManager().getDefaultDisplay();
-        Point point = new Point();
-        defaultDisplay.getSize(point);
-        int x = point.x;
-        int y = point.y;
         View view1 = getLayoutInflater().inflate(R.layout.dialog_choose_color, null);
-        final MyDialog myDialog = new MyDialog(MainActivity.this, y-800, 500, view1);
+        int width = constraintLayout.getWidth();//获取最外层布局的宽度
+        //宽度和高度即设置的对话框的大小
+        final MyDialog myDialog = new MyDialog(MainActivity.this, width-150, 500, view1);
         myDialog.setCancelable(true);
         myDialog.show();
 
@@ -419,6 +405,7 @@ public class MainActivity extends AppCompatActivity {
                 //textView.setTextColor(color);
                 //colorSeekBar.getAlphaValue();
 
+                dataManager.themeColor = color;
                 collapsingToolbarLayout.setContentScrimColor(color);
                 floatingActionButton.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
                 floatingActionButton.setBackgroundTintList(createColorStateList(color,color,color,color));
@@ -527,8 +514,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-
     //*****************************************************************************************************子线程的配置
 
     private class CountDownThread extends Thread{
@@ -608,11 +593,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    //计时更新
     private void countDown(){
         countDownItemAdapter.notifyDataSetChanged();
         myHolderCreator.update();
     }
 
+    //countdownitem更新操作
     private void notifyDataSetChanged(){
         countDownItemAdapter.notifyDataSetChanged();
 

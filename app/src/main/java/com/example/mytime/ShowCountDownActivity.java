@@ -1,5 +1,6 @@
 package com.example.mytime;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
@@ -106,10 +108,7 @@ public class ShowCountDownActivity extends AppCompatActivity {
                 finish();
                 break;
             case R.id.menu_item_delete:
-                Intent  intent = new Intent(ShowCountDownActivity.this,MainActivity.class);
-                intent.putExtra(DataManager.POSITION,position);
-                setResult(DataManager.RESULT_CODE_DELETE,intent);
-                finish();
+                buildDeleteDialog();
                 break;
             case R.id.menu_item_edit:
                 Intent  intent1 = new Intent(ShowCountDownActivity.this,EditCountDownActivity.class);
@@ -195,5 +194,29 @@ public class ShowCountDownActivity extends AppCompatActivity {
             finish();
         }
         return false;
+    }
+
+    //创建删除确认对话框
+    private void buildDeleteDialog(){
+        AlertDialog.Builder dialog = new AlertDialog.Builder(ShowCountDownActivity.this);
+        dialog.setTitle("是否删除该计时");
+        //dialog.setMessage("删除标签不会删除所包含的倒计时");
+        dialog.setCancelable(false);
+        dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent  intent = new Intent(ShowCountDownActivity.this,MainActivity.class);
+                intent.putExtra(DataManager.POSITION,position);
+                setResult(DataManager.RESULT_CODE_DELETE,intent);
+                finish();
+            }
+        });
+        dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        dialog.show();
     }
 }

@@ -52,6 +52,9 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
 
         toolbar = findViewById(R.id.toolbar_activit_edit);
         toolbar.setTitle("");
+        if(dataManager.themeColor != -1){
+            toolbar.setBackgroundColor(dataManager.themeColor);
+        }
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
@@ -94,7 +97,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
                 break;
             case R.id.menu_item_ok:
                 try {
-                    judge();
+                    judgeInputReasonable();
                 } catch (ParseException e) {
 
 
@@ -133,7 +136,12 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
         );
         //dpd.setVersion(DatePickerDialog.Version.VERSION_1);
 
-        datePickerDialog.setAccentColor(getResources().getColor(R.color.themeColor));
+        if(dataManager.themeColor != -1){
+            datePickerDialog.setAccentColor(dataManager.themeColor);
+        }else {
+            datePickerDialog.setAccentColor(getResources().getColor(R.color.themeColor));
+        }
+
         //datePickerDialog.show(getSupportFragmentManager(), "Datepickerdialog");
     }
 
@@ -143,7 +151,11 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
                 EditCountDownActivity.this,
                 now.get(Calendar.HOUR_OF_DAY),
                 now.get(Calendar.HOUR),false);
-        timePickerDialog.setAccentColor(getResources().getColor(R.color.themeColor));
+        if(dataManager.themeColor != -1){
+            timePickerDialog.setAccentColor(dataManager.themeColor);
+        }else {
+            timePickerDialog.setAccentColor(getResources().getColor(R.color.themeColor));
+        }
         //timePickerDialog.show(getSupportFragmentManager(), "Timepickerdialog");
     }
 
@@ -169,7 +181,8 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
         ifTime = true;
     }
 
-    private void judge() throws ParseException {
+    //判断编辑和新建项目的合理性
+    private void judgeInputReasonable() throws ParseException {
         if(!(title.getText().toString().equals(""))){
             if(ifTime){//如果选择了日期就无论是新建还是编辑统一处理
                 CountDownItem temp = new CountDownItem(times,title.getText().toString(),describe.getText().toString(),R.drawable.user);
@@ -208,6 +221,8 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
             Toast.makeText(this, "标题栏不能为空", Toast.LENGTH_SHORT).show();
         }
     }
+
+
 }
 /*
 *
