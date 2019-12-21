@@ -119,6 +119,7 @@
                             android:layout_gravity="bottom"
                             android:background="#94000000"/>
                         <LinearLayout
+                            android:id="@+id/linearlayout_notification"
                             android:orientation="horizontal"
                             android:layout_weight="1"
                             android:layout_width="match_parent"

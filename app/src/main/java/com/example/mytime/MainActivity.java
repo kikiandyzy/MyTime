@@ -1,5 +1,6 @@
 package com.example.mytime;
 
+import android.app.NotificationManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -330,13 +331,6 @@ public class MainActivity extends AppCompatActivity {
         final MyDialog myDialog = new MyDialog(MainActivity.this, width-150, 500, view1);
         myDialog.setCancelable(true);
         myDialog.show();
-        /*
-        //设置大小
-         final WindowManager.LayoutParams params = myDialog.getWindow().getAttributes();
-        params.width = 1000;
-        params.height = 1000;
-        myDialog.getWindow().setAttributes(params);
-        * */
 
         //注册点击事件
         myDialog.getWindow().findViewById(R.id.add_label_cancel).setOnClickListener(new View.OnClickListener() {
@@ -561,6 +555,8 @@ public class MainActivity extends AppCompatActivity {
         if(countDownThread != null){
             countDownThread.stopThread();
         }
+        NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        manager.cancelAll();
 
     }
 

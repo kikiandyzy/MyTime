@@ -1,5 +1,7 @@
 package com.example.mytime;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,7 +10,9 @@ import android.os.Message;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,6 +22,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.NotificationCompat;
 
 import com.example.mytime.DataStructure.CountDownItem;
 import com.example.mytime.DataStructure.DataManager;
@@ -47,6 +52,7 @@ public class ShowCountDownActivity extends AppCompatActivity {
     };
     private ShowThread showThread;
     private boolean ifEdit = false;
+    LinearLayout linearLayoutNotification;
 
 
     @Override
@@ -70,8 +76,8 @@ public class ShowCountDownActivity extends AppCompatActivity {
         describe = findViewById(R.id.textview_describe_activity_show);
 
         Intent intent = getIntent();
-        countDownItem = (CountDownItem) intent.getSerializableExtra("countDownItem");
-        position = intent.getIntExtra("position",0);
+        countDownItem = (CountDownItem) intent.getSerializableExtra(DataManager.COUNTDOWNITEM);
+        position = intent.getIntExtra(DataManager.POSITION,0);
         title.setText(countDownItem.getTitle());
         targetDate.setText(countDownItem.getTargetDateParticular());
         countDown.setText(countDownItem.getCountDownString());
@@ -81,6 +87,13 @@ public class ShowCountDownActivity extends AppCompatActivity {
         lp.height = dataManager.constraintLayout.getHeight()-900;//900是toolbar的长度
         cardView.setLayoutParams(lp);
 
+        linearLayoutNotification = findViewById(R.id.linearlayout_notification);
+        linearLayoutNotification.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendNotification();
+            }
+        });
         //开始计时线程
         showThread = new ShowThread();
         new Thread(showThread).start();
@@ -109,6 +122,7 @@ public class ShowCountDownActivity extends AppCompatActivity {
                 break;
             case R.id.menu_item_delete:
                 buildDeleteDialog();
+
                 break;
             case R.id.menu_item_edit:
                 Intent  intent1 = new Intent(ShowCountDownActivity.this,EditCountDownActivity.class);
@@ -162,6 +176,7 @@ public class ShowCountDownActivity extends AppCompatActivity {
         if(showThread != null){
             showThread.stopThread();
         }
+
     }
 
     @Override
@@ -219,4 +234,22 @@ public class ShowCountDownActivity extends AppCompatActivity {
         });
         dialog.show();
     }
+
+    //开启通知的相关设置
+
+    private Notification notification;
+    private void sendNotification(){
+        NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        notification = new NotificationCompat.Builder(this)
+                .setContentTitle(countDownItem.getTitle())
+                .setContentText(countDownItem.getTargetDateSimple()+" timing...")
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.drawable.date_activity_edit)
+                .build();
+        manager.notify(1,notification);
+    }
+
+
+
+
 }

@@ -42,5 +42,8 @@ public class DataManager extends Application {
 
     public int themeColor = -1;
 
+    //随机生成照片的函数
+
+
 
 }

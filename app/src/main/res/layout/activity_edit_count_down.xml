@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:id="@+id/linearlayout_edit_acivity"
     tools:context=".EditCountDownActivity">
     <FrameLayout
         android:layout_width="match_parent"
@@ -186,6 +187,7 @@
                         android:textSize="16dp"
                         android:text="添加标签" />
                     <TextView
+                        android:id="@+id/textview_show_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="12dp"

@@ -5,8 +5,11 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,6 +20,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.mytime.DataStructure.CountDownItem;
 import com.example.mytime.DataStructure.DataManager;
+import com.example.mytime.UserDefined.MyDialog;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
@@ -33,6 +37,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
     private EditText title;
     private EditText describe;
     private TextView showDate;
+    private TextView showLabel;
 
 
 
@@ -41,7 +46,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
     private TimePickerDialog timePickerDialog;
     private int[] times = new int[]{1,2,3,4,5,6};
     private boolean ifTime = false;
-    CountDownItem countDownItem;
+    private CountDownItem countDownItem;
 
 
     @Override
@@ -62,6 +67,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
         title = findViewById(R.id.title_edittext_activity_edit);
         describe = findViewById(R.id.describe_edittext_activity_edit);
         showDate = findViewById(R.id.show_date);
+        showLabel = findViewById(R.id.textview_show_label);
 
 
         initOptions();
@@ -73,7 +79,11 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
             title.setText(countDownItem.getTitle());
             describe.setText(countDownItem.getDescribe());
             showDate.setText(countDownItem.getTargetDateParticular());
+            showLabel.setText(countDownItem.getLabel());
+        }else {
+            countDownItem = new CountDownItem();
         }
+
         buildDatePicker();
         buildTimePicker();
 
@@ -120,6 +130,12 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
             @Override
             public void onClick(View view) {
                 datePickerDialog.show(getSupportFragmentManager(), "Datepickerdialog");
+            }
+        });
+        addLabel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                buildAddLabelDialog();
             }
         });
 
@@ -186,6 +202,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
         if(!(title.getText().toString().equals(""))){
             if(ifTime){//如果选择了日期就无论是新建还是编辑统一处理
                 CountDownItem temp = new CountDownItem(times,title.getText().toString(),describe.getText().toString(),R.drawable.user);
+                temp.setLabel(showLabel.getText().toString());
                 Intent intent;
                 if(countDownItem == null){//mainActivity
                     intent = new Intent(this,MainActivity.class);
@@ -200,6 +217,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
                 Intent intent;
                 if(countDownItem != null){//用原来的日期
                     temp = new CountDownItem(countDownItem.getTimes(),title.getText().toString(),describe.getText().toString(),R.drawable.user);
+                    temp.setLabel(showLabel.getText().toString());
                     intent = new Intent(this,ShowCountDownActivity.class);
                 }else {//如果是新建，就用现在的时间
                     Calendar now = Calendar.getInstance();
@@ -220,6 +238,56 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
         }else {
             Toast.makeText(this, "标题栏不能为空", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    //弹出一个确认添加标签的对话框
+    private void buildAddLabelDialog(){
+        View view1 = getLayoutInflater().inflate(R.layout.dialog_set_label, null);
+        LinearLayout linearLayout = findViewById(R.id.linearlayout_edit_acivity);
+        int width = linearLayout.getWidth();//获取最外层布局的宽度
+        //宽度和高度即设置的对话框的大小
+        final MyDialog myDialog = new MyDialog(EditCountDownActivity.this, width-150, 800, view1);
+        myDialog.setCancelable(true);
+        myDialog.show();
+        ListView listView = myDialog.getWindow().findViewById(R.id.listview_set_label_dialog);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(EditCountDownActivity.this,android.R.layout.simple_list_item_1,dataManager.labelName);
+        listView.setAdapter(adapter);
+        final String[] label = {""};
+        TextView chooseLabel = myDialog.getWindow().findViewById(R.id.choose_label_dialog_set_label);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                label[0] = dataManager.labelName.get(i);
+
+                chooseLabel.setText("选择标签："+label[0]);
+            }
+        });
+
+        myDialog.getWindow().findViewById(R.id.set_label_clean).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showLabel.setText("");
+                countDownItem.setLabel("");
+                myDialog.dismiss();
+            }
+        });
+        myDialog.getWindow().findViewById(R.id.set_label_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                myDialog.dismiss();
+            }
+        });
+        myDialog.getWindow().findViewById(R.id.set_label_ok).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showLabel.setText(label[0]);
+                myDialog.dismiss();
+            }
+        });
+
+
+
     }
 
 

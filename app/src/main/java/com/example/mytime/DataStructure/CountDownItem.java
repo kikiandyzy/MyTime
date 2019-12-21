@@ -115,4 +115,14 @@ public class CountDownItem implements Serializable {
 
         return "";
     }
+    private String label = "";
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+    public CountDownItem(){}
 }

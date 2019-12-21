@@ -45,4 +45,7 @@ dependencies {
     //时间选择器
     implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
 
+    //选择编辑图片的第三方控件
+    implementation 'com.github.yalantis:ucrop:2.2.4-native'
+
 }
