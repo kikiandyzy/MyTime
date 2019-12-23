@@ -27,7 +27,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mytime.DataStructure.CountDownItem;
-import com.example.mytime.DataStructure.DataManager;
+import com.example.mytime.DataStructure.Manager;
 import com.example.mytime.UserDefined.CountDownItemAdapter;
 import com.example.mytime.UserDefined.MyDialog;
 import com.example.mytime.UserDefined.MyHolderCreator;
@@ -56,8 +56,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    //全局变量
-    private DataManager dataManager;
+
+    private Manager dataManager;
     //主页面最外层布局
     private ConstraintLayout constraintLayout;
     //侧滑菜单
@@ -101,16 +101,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         constraintLayout = findViewById(R.id.constraintlayout_activity_main);
         //获取后台数据
-        dataManager = (DataManager)getApplication();
-        dataManager.constraintLayout = constraintLayout;
+        dataManager = new Manager(this);
+        dataManager.load();//从文件中加载数据
+
         //初始化主页面的AppBar
         initAppBarLayout();
         //初始化侧滑抽屉菜单
         initSildingMeun();
-
-
-
-
 
         //初始化recyclerview
         try {
@@ -392,6 +389,7 @@ public class MainActivity extends AppCompatActivity {
         colorSeekBar.setBarHeight(5); //5dpi
         colorSeekBar.setThumbHeight(30); //30dpi
         colorSeekBar.setBarMargin(10);
+        int tempColor = dataManager.getThemeColor();
         colorSeekBar.setOnColorChangeListener(new ColorSeekBar.OnColorChangeListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
@@ -399,7 +397,7 @@ public class MainActivity extends AppCompatActivity {
                 //textView.setTextColor(color);
                 //colorSeekBar.getAlphaValue();
 
-                dataManager.themeColor = color;
+                dataManager.setThemeColor(color);
                 collapsingToolbarLayout.setContentScrimColor(color);
                 floatingActionButton.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
                 floatingActionButton.setBackgroundTintList(createColorStateList(color,color,color,color));
@@ -413,6 +411,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 collapsingToolbarLayout.setContentScrim(drawable);
                 floatingActionButton.setBackgroundTintList(colorStateList);
+                dataManager.setThemeColor(tempColor);
                 myDialog.dismiss();
             }
         });
@@ -441,15 +440,18 @@ public class MainActivity extends AppCompatActivity {
     //*****************************************************************************************************recyclerview的配置
     private void initRecyclerView() throws ParseException {
         recyclerView = findViewById(R.id.recyclerview_activity_mian);
-        countDownItemList = dataManager.initCountDownItemList();
+        countDownItemList = dataManager.getCountDownItemList();
         countDownItemAdapter = new CountDownItemAdapter(countDownItemList);
         countDownItemAdapter.setmOnItemClickListener(new CountDownItemAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View v, int position) {
                 Intent intent = new Intent(MainActivity.this,ShowCountDownActivity.class);
-                intent.putExtra(DataManager.COUNTDOWNITEM,countDownItemList.get(position));
-                intent.putExtra(DataManager.POSITION,position);
-                startActivityForResult(intent,DataManager.REQUEST_CODE_SHOW);
+                intent.putExtra(Manager.COUNTDOWNITEM,countDownItemList.get(position));
+                intent.putExtra(Manager.POSITION,position);
+                intent.putExtra(Manager.THEMECOLOR,dataManager.getThemeColor());
+                intent.putExtra(Manager.LABLENAME,dataManager.labelName);
+                intent.putExtra(Manager.HEIGHT,collapsingToolbarLayout.getHeight());
+                startActivityForResult(intent,Manager.REQUEST_CODE_SHOW);
             }
         });
 
@@ -484,7 +486,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this,EditCountDownActivity.class);
-                startActivityForResult(intent, DataManager.REQUEST_CODE_NEW);
+                intent.putExtra(Manager.THEMECOLOR,dataManager.getThemeColor());
+                intent.putExtra(Manager.LABLENAME,dataManager.labelName);
+                startActivityForResult(intent, Manager.REQUEST_CODE_NEW);
 
             }
         });
@@ -500,9 +504,12 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(int i) {
                 //启动对应项
                 Intent intent = new Intent(MainActivity.this,ShowCountDownActivity.class);
-                intent.putExtra(DataManager.COUNTDOWNITEM,countDownItemList.get(i));
-                intent.putExtra(DataManager.POSITION,i);
-                startActivityForResult(intent,DataManager.REQUEST_CODE_SHOW);
+                intent.putExtra(Manager.COUNTDOWNITEM,countDownItemList.get(i));
+                intent.putExtra(Manager.POSITION,i);
+                intent.putExtra(Manager.THEMECOLOR,dataManager.getThemeColor());
+                intent.putExtra(Manager.LABLENAME,dataManager.labelName);
+                intent.putExtra(Manager.HEIGHT,collapsingToolbarLayout.getHeight());
+                startActivityForResult(intent,Manager.REQUEST_CODE_SHOW);
             }
         });
 
@@ -557,6 +564,7 @@ public class MainActivity extends AppCompatActivity {
         }
         NotificationManager manager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         manager.cancelAll();
+        dataManager.save();
 
     }
 
@@ -564,21 +572,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode){
-            case DataManager.REQUEST_CODE_NEW:
+            case Manager.REQUEST_CODE_NEW:
                 if(resultCode == RESULT_OK){
-                    CountDownItem countDownItem = (CountDownItem) data.getSerializableExtra(DataManager.COUNTDOWNITEM);
+                    CountDownItem countDownItem = (CountDownItem) data.getSerializableExtra(Manager.COUNTDOWNITEM);
                     countDownItemList.add(countDownItem);
                     notifyDataSetChanged();
                 }
                 break;
-                case DataManager.REQUEST_CODE_SHOW:
-                    if(resultCode == DataManager.RESULT_CODE_DELETE){
+                case Manager.REQUEST_CODE_SHOW:
+                    if(resultCode == Manager.RESULT_CODE_DELETE){
                         //Toast.makeText(this, ""+data.getIntExtra(DataManager.POSITION,0), Toast.LENGTH_SHORT).show();
-                        countDownItemList.remove(data.getIntExtra(DataManager.POSITION,0));
+                        countDownItemList.remove(data.getIntExtra(Manager.POSITION,0));
                         notifyDataSetChanged();
-                    }else if(resultCode == DataManager.RESULT_CODE_EDIT){
+                    }else if(resultCode == Manager.RESULT_CODE_EDIT){
                         try {
-                            countDownItemList.get(data.getIntExtra(DataManager.POSITION,0)).update((CountDownItem) data.getSerializableExtra(DataManager.COUNTDOWNITEM));
+                            countDownItemList.get(data.getIntExtra(Manager.POSITION,0)).update((CountDownItem) data.getSerializableExtra(Manager.COUNTDOWNITEM));
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }

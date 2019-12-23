@@ -26,7 +26,9 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.NotificationCompat;
 
 import com.example.mytime.DataStructure.CountDownItem;
-import com.example.mytime.DataStructure.DataManager;
+import com.example.mytime.DataStructure.Manager;
+
+import java.util.ArrayList;
 
 public class ShowCountDownActivity extends AppCompatActivity {
     private Toolbar toolbar;
@@ -37,7 +39,8 @@ public class ShowCountDownActivity extends AppCompatActivity {
     private TextView targetDate;
     private TextView countDown;
     private TextView describe;
-    private DataManager dataManager;
+
+
     private CountDownItem countDownItem;
     private ImageView imageView;
     private Handler handler = new Handler(){
@@ -54,7 +57,11 @@ public class ShowCountDownActivity extends AppCompatActivity {
     };
     private ShowThread showThread;
     private boolean ifEdit = false;
-    LinearLayout linearLayoutNotification;
+    private LinearLayout linearLayoutNotification;
+    //Intent传过来的配置参数
+    private int themeColor;
+    private ArrayList<String> labelName = new ArrayList<>();
+
 
 
     @Override
@@ -62,7 +69,7 @@ public class ShowCountDownActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_count_down_item);
 
-        dataManager = (DataManager) getApplication();
+
         toolbar = findViewById(R.id.activity_show_toolbar);
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
@@ -79,8 +86,8 @@ public class ShowCountDownActivity extends AppCompatActivity {
         imageView = findViewById(R.id.activity_show_imageview);
 
         Intent intent = getIntent();
-        countDownItem = (CountDownItem) intent.getSerializableExtra(DataManager.COUNTDOWNITEM);
-        position = intent.getIntExtra(DataManager.POSITION,0);
+        countDownItem = (CountDownItem) intent.getSerializableExtra(Manager.COUNTDOWNITEM);
+        position = intent.getIntExtra(Manager.POSITION,0);
         title.setText(countDownItem.getTitle());
         targetDate.setText(countDownItem.getTargetDateParticular());
         countDown.setText(countDownItem.getCountDownString());
@@ -90,8 +97,11 @@ public class ShowCountDownActivity extends AppCompatActivity {
         }else {
             imageView.setImageResource(countDownItem.getImageId());
         }
+        themeColor = intent.getIntExtra(Manager.THEMECOLOR,R.color.themeColor);
+        labelName = intent.getStringArrayListExtra(Manager.LABLENAME);
+
         ViewGroup.LayoutParams lp = cardView.getLayoutParams();
-        lp.height = dataManager.constraintLayout.getHeight()-900;//900是toolbar的长度
+        lp.height = intent.getIntExtra(Manager.HEIGHT,1704) -900;//900是toolbar的长度
         cardView.setLayoutParams(lp);
 
         linearLayoutNotification = findViewById(R.id.linearlayout_notification);
@@ -121,9 +131,9 @@ public class ShowCountDownActivity extends AppCompatActivity {
             case android.R.id.home:
                 if(ifEdit){
                     Intent  intent = new Intent(ShowCountDownActivity.this,MainActivity.class);
-                    intent.putExtra(DataManager.POSITION,position);
-                    intent.putExtra(DataManager.COUNTDOWNITEM,countDownItem);
-                    setResult(DataManager.RESULT_CODE_EDIT,intent);
+                    intent.putExtra(Manager.POSITION,position);
+                    intent.putExtra(Manager.COUNTDOWNITEM,countDownItem);
+                    setResult(Manager.RESULT_CODE_EDIT,intent);
                 }
                 finish();
                 break;
@@ -133,8 +143,10 @@ public class ShowCountDownActivity extends AppCompatActivity {
                 break;
             case R.id.menu_item_edit:
                 Intent  intent1 = new Intent(ShowCountDownActivity.this,EditCountDownActivity.class);
-                intent1.putExtra(DataManager.COUNTDOWNITEM,countDownItem);
-                startActivityForResult(intent1,DataManager.REQUEST_CODE_EDIT);
+                intent1.putExtra(Manager.COUNTDOWNITEM,countDownItem);
+                intent1.putExtra(Manager.THEMECOLOR,themeColor);
+                intent1.putExtra(Manager.LABLENAME,labelName);
+                startActivityForResult(intent1,Manager.REQUEST_CODE_EDIT);
                 break;
         }
         return  true;
@@ -190,9 +202,9 @@ public class ShowCountDownActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode){
-            case DataManager.REQUEST_CODE_EDIT:
+            case Manager.REQUEST_CODE_EDIT:
                 if (resultCode ==RESULT_OK){
-                    countDownItem = (CountDownItem) data.getSerializableExtra(DataManager.COUNTDOWNITEM);
+                    countDownItem = (CountDownItem) data.getSerializableExtra(Manager.COUNTDOWNITEM);
                     title.setText(countDownItem.getTitle());
                     targetDate.setText(countDownItem.getTargetDateParticular());
                     describe.setText(countDownItem.getDescribe());
@@ -213,9 +225,9 @@ public class ShowCountDownActivity extends AppCompatActivity {
         if(keyCode ==KeyEvent.KEYCODE_BACK&&event.getRepeatCount() == 0){
             if(ifEdit){
                 Intent  intent = new Intent(ShowCountDownActivity.this,MainActivity.class);
-                intent.putExtra(DataManager.POSITION,position);
-                intent.putExtra(DataManager.COUNTDOWNITEM,countDownItem);
-                setResult(DataManager.RESULT_CODE_EDIT,intent);
+                intent.putExtra(Manager.POSITION,position);
+                intent.putExtra(Manager.COUNTDOWNITEM,countDownItem);
+                setResult(Manager.RESULT_CODE_EDIT,intent);
             }
             finish();
         }
@@ -232,8 +244,8 @@ public class ShowCountDownActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 Intent  intent = new Intent(ShowCountDownActivity.this,MainActivity.class);
-                intent.putExtra(DataManager.POSITION,position);
-                setResult(DataManager.RESULT_CODE_DELETE,intent);
+                intent.putExtra(Manager.POSITION,position);
+                setResult(Manager.RESULT_CODE_DELETE,intent);
                 finish();
             }
         });

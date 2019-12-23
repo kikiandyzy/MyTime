@@ -33,19 +33,20 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.mytime.DataStructure.CountDownItem;
-import com.example.mytime.DataStructure.DataManager;
+import com.example.mytime.DataStructure.Manager;
 import com.example.mytime.UserDefined.MyDialog;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class EditCountDownActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,TimePickerDialog.OnTimeSetListener{
-    private DataManager dataManager;
+
     private Toolbar toolbar;
     private LinearLayout date;
-    private LinearLayout repetition;
     private LinearLayout image;
     private LinearLayout addLabel;
     private EditText title;
@@ -66,18 +67,20 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
     //照片
     private Bitmap bitmap = null;
 
+    //Intent传过来的配置参数
+    private int themeColor;
+    private List<String> labelName = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_count_down);
-        dataManager = (DataManager)getApplication();
+
 
         toolbar = findViewById(R.id.toolbar_activit_edit);
         toolbar.setTitle("");
-        if(dataManager.themeColor != -1){
-            toolbar.setBackgroundColor(dataManager.themeColor);
-        }
+
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
@@ -102,6 +105,15 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
             countDownItem = new CountDownItem();
             ifNew = true;
         }
+        themeColor = intent.getIntExtra(Manager.THEMECOLOR,-1);
+        labelName = intent.getStringArrayListExtra(Manager.LABLENAME);
+        if(themeColor == -1){
+            toolbar.setBackgroundColor(getResources().getColor(R.color.themeColor));
+
+        }else {
+            toolbar.setBackgroundColor(themeColor);
+        }
+
 
         buildDatePicker();
         buildTimePicker();
@@ -141,7 +153,6 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
     private void initOptions(){
         //四个选项
         date = findViewById(R.id.date_lin_activity_edit);
-        repetition = findViewById(R.id.repetition_lin_activity_edit);
         image = findViewById(R.id.image_lin_activity_edit);
         addLabel = findViewById(R.id.add_label_lin_activity_edit);
         date.setOnClickListener(new View.OnClickListener() {
@@ -154,6 +165,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
             @Override
             public void onClick(View view) {
                 buildAddLabelDialog();
+                Toast.makeText(EditCountDownActivity.this, "选择标签", Toast.LENGTH_SHORT).show();
             }
         });
         image.setOnClickListener(new View.OnClickListener() {
@@ -184,11 +196,12 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
         );
         //dpd.setVersion(DatePickerDialog.Version.VERSION_1);
 
-        if(dataManager.themeColor != -1){
-            datePickerDialog.setAccentColor(dataManager.themeColor);
-        }else {
+        if(themeColor == -1){
             datePickerDialog.setAccentColor(getResources().getColor(R.color.themeColor));
+        }else {
+            datePickerDialog.setAccentColor(themeColor);
         }
+
 
         //datePickerDialog.show(getSupportFragmentManager(), "Datepickerdialog");
     }
@@ -199,11 +212,13 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
                 EditCountDownActivity.this,
                 now.get(Calendar.HOUR_OF_DAY),
                 now.get(Calendar.HOUR),false);
-        if(dataManager.themeColor != -1){
-            timePickerDialog.setAccentColor(dataManager.themeColor);
-        }else {
+
+        if(themeColor == -1){
             timePickerDialog.setAccentColor(getResources().getColor(R.color.themeColor));
+        }else {
+            timePickerDialog.setAccentColor(themeColor);
         }
+
         //timePickerDialog.show(getSupportFragmentManager(), "Timepickerdialog");
     }
 
@@ -241,7 +256,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
                 }else {
                     intent = new Intent(this,ShowCountDownActivity.class);
                 }
-                intent.putExtra(DataManager.COUNTDOWNITEM,temp);
+                intent.putExtra(Manager.COUNTDOWNITEM,temp);
 
                 setResult(RESULT_OK,intent);
                 finish();
@@ -264,7 +279,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
                     intent = new Intent(this,MainActivity.class);
 
                 }
-                intent.putExtra(DataManager.COUNTDOWNITEM,temp);
+                intent.putExtra(Manager.COUNTDOWNITEM,temp);
                 setResult(RESULT_OK,intent);
                 finish();
             }
@@ -283,7 +298,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
         myDialog.setCancelable(true);
         myDialog.show();
         ListView listView = myDialog.getWindow().findViewById(R.id.listview_set_label_dialog);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(EditCountDownActivity.this,android.R.layout.simple_list_item_1,dataManager.labelName);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(EditCountDownActivity.this,android.R.layout.simple_list_item_1,labelName);
         listView.setAdapter(adapter);
         final String[] label = {""};
         TextView chooseLabel = myDialog.getWindow().findViewById(R.id.choose_label_dialog_set_label);
@@ -291,7 +306,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                label[0] = dataManager.labelName.get(i);
+                label[0] = labelName.get(i);
 
                 chooseLabel.setText("选择标签："+label[0]);
             }
@@ -331,7 +346,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
     private void openAlbum(){
         Intent intent = new Intent("android.intent.action.GET_CONTENT");
         intent.setType("image/*");
-        startActivityForResult(intent,DataManager.REQUEST_CHOOSE_PHOTO);
+        startActivityForResult(intent,Manager.REQUEST_CHOOSE_PHOTO);
 
     }
 
@@ -410,7 +425,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode){
-            case DataManager.REQUEST_CHOOSE_PHOTO:
+            case Manager.REQUEST_CHOOSE_PHOTO:
                 if(resultCode == RESULT_OK){
                     if(Build.VERSION.SDK_INT >= 19){
                         handleImageOnKitKat(data);
