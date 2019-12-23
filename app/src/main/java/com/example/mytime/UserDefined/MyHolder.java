@@ -38,7 +38,11 @@ public class MyHolder implements Holder<CountDownItem> {
         title.setText(countDownItem.getTitle());
         targetData.setText(countDownItem.getTargetDateSimple());
         countdown.setText(countDownItem.getCountDownString());
-        imageView.setImageResource(countDownItem.getImageId());
+        if(countDownItem.getBitmap() != null){
+            imageView.setImageBitmap(countDownItem.getBitmap());
+        }else {
+            imageView.setImageResource(countDownItem.getImageId());
+        }
         this.context =context;
         this.countDownItem = countDownItem;
 

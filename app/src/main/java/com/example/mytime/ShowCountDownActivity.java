@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -38,6 +39,7 @@ public class ShowCountDownActivity extends AppCompatActivity {
     private TextView describe;
     private DataManager dataManager;
     private CountDownItem countDownItem;
+    private ImageView imageView;
     private Handler handler = new Handler(){
         @Override
         public void handleMessage(@NonNull Message msg) {
@@ -74,6 +76,7 @@ public class ShowCountDownActivity extends AppCompatActivity {
         targetDate = findViewById(R.id.textview_target_date_activity_show);
         countDown = findViewById(R.id.textview_count_down_activity_show);
         describe = findViewById(R.id.textview_describe_activity_show);
+        imageView = findViewById(R.id.activity_show_imageview);
 
         Intent intent = getIntent();
         countDownItem = (CountDownItem) intent.getSerializableExtra(DataManager.COUNTDOWNITEM);
@@ -82,7 +85,11 @@ public class ShowCountDownActivity extends AppCompatActivity {
         targetDate.setText(countDownItem.getTargetDateParticular());
         countDown.setText(countDownItem.getCountDownString());
         describe.setText(countDownItem.getDescribe());
-
+        if(countDownItem.getBitmap() != null){
+            imageView.setImageBitmap(countDownItem.getBitmap());
+        }else {
+            imageView.setImageResource(countDownItem.getImageId());
+        }
         ViewGroup.LayoutParams lp = cardView.getLayoutParams();
         lp.height = dataManager.constraintLayout.getHeight()-900;//900是toolbar的长度
         cardView.setLayoutParams(lp);
@@ -189,14 +196,18 @@ public class ShowCountDownActivity extends AppCompatActivity {
                     title.setText(countDownItem.getTitle());
                     targetDate.setText(countDownItem.getTargetDateParticular());
                     describe.setText(countDownItem.getDescribe());
+                    if(countDownItem.getBitmap() != null){
+                        imageView.setImageBitmap(countDownItem.getBitmap());
+                    }else {
+                        imageView.setImageResource(countDownItem.getImageId());
+                    }
                     ifEdit = true;
                 }
                 break;
         }
     }
+
     //返回键返回函数
-
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(keyCode ==KeyEvent.KEYCODE_BACK&&event.getRepeatCount() == 0){

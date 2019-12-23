@@ -8,7 +8,7 @@
     app:cardCornerRadius="4dp">
 
     <LinearLayout
-        android:id="@+id/count_down_item_linearlayout"
+        android:background="@color/lucency"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -81,12 +81,16 @@
 
         </LinearLayout>
         <!--第三个是空出来的view，增加美感-->
-        <View
+        <ImageView
+            android:id="@+id/background_count_down_item"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.1"/>
+            android:layout_weight="0.1"
+            android:scaleType="center" />
 
     </LinearLayout>
+
+
 
 
 </androidx.cardview.widget.CardView>

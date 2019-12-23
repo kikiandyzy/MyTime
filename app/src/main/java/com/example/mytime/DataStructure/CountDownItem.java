@@ -1,11 +1,17 @@
 package com.example.mytime.DataStructure;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import com.example.mytime.R;
 import com.example.mytime.UserDefined.MyDataFormat;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class CountDownItem implements Serializable {
     private Long time;
@@ -13,13 +19,16 @@ public class CountDownItem implements Serializable {
     private String describe;
     private int imageId;
     private int[] times;
+    private byte[] bitmapBytes = null;
 
 
-    public CountDownItem(int[] times,String title,String describe ,int imageId) throws ParseException {
+
+    public CountDownItem(int[] times,String title,String describe,Bitmap bitmap) throws ParseException {
         this.times = times;
         this.title = title;
         this.describe = describe;
-        this.imageId = imageId;
+        this.bitmapBytes = changeByte(bitmap);
+        imageId = getRandomImage();
         time = MyDataFormat.setCoountDownItemTime(times[0],times[1],times[2],times[3],times[4],times[5]);
     }
 
@@ -32,6 +41,7 @@ public class CountDownItem implements Serializable {
         this.title = countDownItem.getTitle();
         this.describe = countDownItem.getDescribe();
         this.imageId = countDownItem.getImageId();
+        this.bitmapBytes = countDownItem.getBitmapBytes();
         time = MyDataFormat.setCoountDownItemTime(times[0],times[1],times[2],times[3],times[4],times[5]);
     }
 
@@ -61,6 +71,43 @@ public class CountDownItem implements Serializable {
 
     public void setDescribe(String describe) {
         this.describe = describe;
+    }
+
+    public Bitmap getBitmap() {
+
+        if(bitmapBytes != null){
+            Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+            return bitmap;
+        }
+        else
+        {
+            return null;
+        }
+
+    }
+
+    public void setBitmapBytes(Bitmap bm) {
+        if(bm != null){
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            this.bitmapBytes = baos.toByteArray();
+        }
+
+    }
+
+    public byte[] getBitmapBytes() {
+        return bitmapBytes;
+    }
+
+    public static byte[] changeByte(Bitmap bm){
+        if(bm != null){
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            return baos.toByteArray();
+        }
+       else {
+           return null;
+        }
     }
 
     public String getTargetDateSimple() {
@@ -125,4 +172,32 @@ public class CountDownItem implements Serializable {
         return label;
     }
     public CountDownItem(){}
+
+    private int getRandomImage(){
+        Random random = new Random();
+        int id = R.drawable.user;//默认为这张照片
+        switch (random.nextInt(6)){
+            case 0:
+                id = R.drawable.i0;
+                break;
+            case 1:
+                id = R.drawable.i1;
+                break;
+            case 2:
+                id = R.drawable.i2;
+                break;
+            case 3:
+                id = R.drawable.i3;
+                break;
+            case 4:
+                id = R.drawable.i4;
+                break;
+            case 5:
+                id = R.drawable.i5;
+                break;
+            default:
+                break;
+        }
+        return id;
+    }
 }

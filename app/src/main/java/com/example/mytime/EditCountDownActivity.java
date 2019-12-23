@@ -1,7 +1,18 @@
 package com.example.mytime;
 
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.content.ContentUris;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,9 +25,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.mytime.DataStructure.CountDownItem;
 import com.example.mytime.DataStructure.DataManager;
@@ -46,7 +60,11 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
     private TimePickerDialog timePickerDialog;
     private int[] times = new int[]{1,2,3,4,5,6};
     private boolean ifTime = false;
+    private boolean ifNew = false;
     private CountDownItem countDownItem;
+
+    //照片
+    private Bitmap bitmap = null;
 
 
     @Override
@@ -82,6 +100,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
             showLabel.setText(countDownItem.getLabel());
         }else {
             countDownItem = new CountDownItem();
+            ifNew = true;
         }
 
         buildDatePicker();
@@ -135,6 +154,20 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
             @Override
             public void onClick(View view) {
                 buildAddLabelDialog();
+            }
+        });
+        image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //先动态申请危险权限
+                //检查是否有读写sd卡的权限
+                if(ContextCompat.checkSelfPermission(EditCountDownActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)!=
+                        PackageManager.PERMISSION_GRANTED){
+                    //没有就申请
+                    ActivityCompat.requestPermissions(EditCountDownActivity.this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
+                }else {
+                    openAlbum();
+                }
             }
         });
 
@@ -200,22 +233,23 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
     private void judgeInputReasonable() throws ParseException {
         if(!(title.getText().toString().equals(""))){
             if(ifTime){//如果选择了日期就无论是新建还是编辑统一处理
-                CountDownItem temp = new CountDownItem(times,title.getText().toString(),describe.getText().toString(),R.drawable.user);
+                CountDownItem temp = new CountDownItem(times,title.getText().toString(),describe.getText().toString(),bitmap);
                 temp.setLabel(showLabel.getText().toString());
                 Intent intent;
-                if(countDownItem == null){//mainActivity
+                if(ifNew){//mainActivity
                     intent = new Intent(this,MainActivity.class);
                 }else {
                     intent = new Intent(this,ShowCountDownActivity.class);
                 }
                 intent.putExtra(DataManager.COUNTDOWNITEM,temp);
+
                 setResult(RESULT_OK,intent);
                 finish();
             }else {//没有选择日期
                 CountDownItem temp;
                 Intent intent;
-                if(countDownItem != null){//用原来的日期
-                    temp = new CountDownItem(countDownItem.getTimes(),title.getText().toString(),describe.getText().toString(),R.drawable.user);
+                if(ifNew == false){//用原来的日期
+                    temp = new CountDownItem(countDownItem.getTimes(),title.getText().toString(),describe.getText().toString(),bitmap);
                     temp.setLabel(showLabel.getText().toString());
                     intent = new Intent(this,ShowCountDownActivity.class);
                 }else {//如果是新建，就用现在的时间
@@ -226,7 +260,7 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
                     times[3] = now.get(Calendar.HOUR_OF_DAY);
                     times[4] = now.get(Calendar.MINUTE);
                     times[5] = now.get(Calendar.SECOND);
-                    temp = new CountDownItem(times,title.getText().toString(),describe.getText().toString(),R.drawable.user);
+                    temp = new CountDownItem(times,title.getText().toString(),describe.getText().toString(),bitmap);
                     intent = new Intent(this,MainActivity.class);
 
                 }
@@ -287,16 +321,106 @@ public class EditCountDownActivity extends AppCompatActivity implements DatePick
 
 
 
+
+
+
+    }
+
+    //接下来的函数是从文件中获取图片
+    //打开相册
+    private void openAlbum(){
+        Intent intent = new Intent("android.intent.action.GET_CONTENT");
+        intent.setType("image/*");
+        startActivityForResult(intent,DataManager.REQUEST_CHOOSE_PHOTO);
+
+    }
+
+    //无论动态权限申请成不成功，都会调用该方法
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,int[] grantResults){
+        switch (requestCode){
+            case 1:
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    openAlbum();
+                }
+                else {
+                    Toast.makeText(this, "you denied the permission", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                break;
+        }
     }
 
 
+    @TargetApi(19)//4.4以上版本就是不再返回图片真实的URI了，所以要进行解析
+    private void  handleImageOnKitKat(Intent data){
+        String imagePath = null;
+        Uri uri = data.getData();
+        if(DocumentsContract.isDocumentUri(this,uri)){
+            String docId = DocumentsContract.getDocumentId(uri);
+            if("com.android.providers.media.documents".equals(uri.getAuthority())){
+                String id = docId.split(":")[1];
+                String selection = MediaStore.Images.Media._ID+"="+id;
+                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,selection);
+            }else if("com.android.providers.downloads.documents".equals(uri.getAuthority())){
+                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),Long.valueOf(docId));
+                imagePath =getImagePath(contentUri,null);
+            }else if("content".equals(uri.getScheme())){
+                imagePath = getImagePath(uri,null);
+            }else if("file".equalsIgnoreCase(uri.getScheme())){
+                imagePath = uri.getPath();
+            }
+        }
+        displayImage(imagePath);//根据路径显示图片
+    }
+
+
+
+    private void handleImageBeforeKitKat(Intent data){
+        Uri uri = data.getData();
+        String imagePath = getImagePath(uri,null);
+        displayImage(imagePath);
+    }
+
+    private String getImagePath(Uri uri,String selection){
+        String path = null;
+        //通过Uri和selection来获取真实路径
+        Cursor cursor = getContentResolver().query(uri,null,selection,null,null);
+        if(cursor != null){
+            if(cursor.moveToFirst()){
+                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+            }
+            cursor.close();
+        }
+        return path;
+    }
+
+    private void displayImage(String imagePath){
+        if(imagePath != null){
+            bitmap = BitmapFactory.decodeFile(imagePath);
+            //picture.setImageBitmap(bitmap);
+
+        }else {
+            Toast.makeText(this, "failed get image", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode){
+            case DataManager.REQUEST_CHOOSE_PHOTO:
+                if(resultCode == RESULT_OK){
+                    if(Build.VERSION.SDK_INT >= 19){
+                        handleImageOnKitKat(data);
+                    }else {
+                        handleImageBeforeKitKat(data);
+                    }
+                }
+                break;
+                default:
+                    break;
+        }
+    }
 }
-/*
-*
-* Calendar now = Calendar.getInstance();
-                times[0] = now.get(Calendar.YEAR);
-                times[1] = now.get(Calendar.MONTH)+1;
-                times[2] = now.get(Calendar.DAY_OF_MONTH);
-                times[3] = now.get(Calendar.HOUR_OF_DAY);
-                times[4] = now.get(Calendar.MINUTE);
-                times[5] = now.get(Calendar.SECOND);*/
