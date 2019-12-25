@@ -101,7 +101,8 @@ public class ShowCountDownActivity extends AppCompatActivity {
         labelName = intent.getStringArrayListExtra(Manager.LABLENAME);
 
         ViewGroup.LayoutParams lp = cardView.getLayoutParams();
-        lp.height = intent.getIntExtra(Manager.HEIGHT,1704) -900;//900是toolbar的长度
+        int height  = intent.getIntExtra(Manager.HEIGHT,1704);
+        lp.height = height -900;//900是toolbar的长度
         cardView.setLayoutParams(lp);
 
         linearLayoutNotification = findViewById(R.id.linearlayout_notification);

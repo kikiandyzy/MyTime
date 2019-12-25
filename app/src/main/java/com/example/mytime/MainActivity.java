@@ -450,7 +450,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(Manager.POSITION,position);
                 intent.putExtra(Manager.THEMECOLOR,dataManager.getThemeColor());
                 intent.putExtra(Manager.LABLENAME,dataManager.labelName);
-                intent.putExtra(Manager.HEIGHT,collapsingToolbarLayout.getHeight());
+                intent.putExtra(Manager.HEIGHT,constraintLayout.getHeight());
                 startActivityForResult(intent,Manager.REQUEST_CODE_SHOW);
             }
         });
@@ -508,7 +508,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(Manager.POSITION,i);
                 intent.putExtra(Manager.THEMECOLOR,dataManager.getThemeColor());
                 intent.putExtra(Manager.LABLENAME,dataManager.labelName);
-                intent.putExtra(Manager.HEIGHT,collapsingToolbarLayout.getHeight());
+                intent.putExtra(Manager.HEIGHT,constraintLayout.getHeight());
                 startActivityForResult(intent,Manager.REQUEST_CODE_SHOW);
             }
         });
